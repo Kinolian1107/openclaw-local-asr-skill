@@ -36,9 +36,10 @@ MODEL_SIZE = os.environ.get("WHISPERX_MODEL", "large-v3-turbo")
 BATCH_SIZE = int(os.environ.get("WHISPERX_BATCH_SIZE", "16"))
 GDOWN_PATH = os.environ.get("GDOWN_PATH", "gdown")
 
-WORKSPACE = "/home/kino/.openclaw/workspace"
-DEFAULT_HOTWORDS_FILE = os.path.join(WORKSPACE, "whisperx_hotwords.txt")
-DEFAULT_CORRECTIONS_FILE = os.path.join(WORKSPACE, "asr_corrections.json")
+SCRIPT_DIR = Path(__file__).resolve().parent
+REPO_DIR = SCRIPT_DIR.parent.parent
+DEFAULT_HOTWORDS_FILE = str(REPO_DIR / "config" / "hotwords.txt")
+DEFAULT_CORRECTIONS_FILE = str(REPO_DIR / "config" / "corrections.json")
 SPEAKER_DB = os.environ.get("SPEAKER_DB", os.path.join(ASR_DIR, "speaker_embeddings"))
 SPEAKER_SAMPLES = os.environ.get("SPEAKER_SAMPLES", os.path.join(ASR_DIR, "speaker_samples"))
 EMBED_MODEL = "pyannote/wespeaker-voxceleb-resnet34-LM"
