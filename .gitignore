@@ -1,0 +1,48 @@
+# Environment variables
+.env
+
+# Audio/video files
+*.wav
+*.mp3
+*.mp4
+*.mkv
+*.avi
+*.mov
+*.webm
+*.flv
+*.m4a
+*.flac
+*.ogg
+*.aac
+*.wma
+
+# Transcription output
+*.srt
+*.vtt
+
+# Python
+__pycache__/
+*.pyc
+.venv*/
+
+# Temporary chunk files
+chunks/
+chunks_*/
+
+# OS files
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# Editor files
+*.swp
+*.swo
+*~
+.vscode/
+.idea/
+
+# Logs
+*.log
+
+# HuggingFace cache
+hf-cache/

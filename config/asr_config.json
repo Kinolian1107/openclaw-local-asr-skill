@@ -1,0 +1,24 @@
+{
+  "mode": "whisperx",
+  "available_modes": {
+    "speaches": {
+      "description": "ffmpeg silence-detection + speaches Docker API (faster-whisper GPU)",
+      "skill": "gfile-asr-speaches",
+      "venv": "/home/kino/asr/.venv",
+      "script": "speaches/scripts/transcribe_smart.py"
+    },
+    "whisperx": {
+      "description": "WhisperX batch inference + wav2vec2 alignment + speaker diarization",
+      "skill": "gfile-asr-whisperx",
+      "venv": "/home/kino/asr/.venv-whisperx",
+      "script": "whisperx/scripts/transcribe_whisperx.py"
+    }
+  },
+  "hotwords_file": "config/hotwords.txt",
+  "corrections_file": "config/corrections.json",
+  "speaker_db": "/home/kino/asr/speaker_embeddings",
+  "speaker_samples": "/home/kino/asr/speaker_samples",
+  "speaker_match_threshold": 0.65,
+  "opencc_mode": "s2twp",
+  "default_language": "zh"
+}
