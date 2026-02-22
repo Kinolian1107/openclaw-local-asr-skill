@@ -39,17 +39,30 @@ mode == "speaches"?
 輸出 SRT/TXT → 透過 Telegram 傳送
 ```
 
+### 工作目錄結構
+
+```
+/home/kino/asr/                     ← 運行時工作目錄（--output-dir）
+├── downloads/                      ← 下載的來源檔（mp3, mp4 等）
+├── tmp/                            ← 中間檔（WAV, chunks）— 轉寫完自動清理
+├── output/                         ← 最終輸出（SRT, TXT, JSON）
+├── speaker_embeddings/             ← 已註冊的說話者聲紋
+├── speaker_samples/                ← 自動擷取的說話者音檔樣本
+├── .venv/                          ← speaches 模式 Python venv
+└── .venv-whisperx/                 ← whisperx 模式 Python venv
+```
+
 ### 資料夾分工
 
 | 位置 | 用途 |
 |------|------|
 | 本 repo (`config/`) | 設定檔：模式切換、熱詞、字詞糾正 |
 | 本 repo (`speaches/`, `whisperx/`) | 轉錄腳本、子 skill 指引 |
-| `/home/kino/asr/` | **運行時工作目錄**：下載檔案、轉錄中間檔、輸出結果 |
-| `/home/kino/asr/.venv/` | speaches 模式 Python venv |
-| `/home/kino/asr/.venv-whisperx/` | whisperx 模式 Python venv |
-| `/home/kino/asr/speaker_embeddings/` | 已註冊的說話者聲紋 |
-| `/home/kino/asr/speaker_samples/` | 自動擷取的說話者音檔樣本 |
+| `{ASR_DIR}/downloads/` | 下載的來源檔案 |
+| `{ASR_DIR}/tmp/` | 中間產物（WAV、chunks），轉寫完自動清理 |
+| `{ASR_DIR}/output/` | 最終輸出（SRT, TXT, JSON）|
+| `{ASR_DIR}/speaker_embeddings/` | 已註冊的說話者聲紋 |
+| `{ASR_DIR}/speaker_samples/` | 自動擷取的說話者音檔樣本 |
 
 ### 前置需求
 
@@ -78,7 +91,7 @@ cd openclaw-local-asr-skill
 #### 2. 建立工作目錄
 
 ```bash
-mkdir -p /home/kino/asr/{speaker_embeddings,speaker_samples,output}
+mkdir -p /home/kino/asr/{downloads,tmp,output,speaker_embeddings,speaker_samples}
 ```
 
 #### 3. speaches 模式設定
@@ -199,8 +212,9 @@ openclaw-local-asr-skill/
 
 | Repo | 用途 |
 |------|------|
-| [openclaw-asr-speaches-skill](https://github.com/Kinolian1107/openclaw-asr-speaches-skill) | speaches 模式獨立 repo（已合併至此，僅供參考） |
-| [openclaw-asr-whisperX-skill](https://github.com/Kinolian1107/openclaw-asr-whisperX-skill) | whisperX 模式獨立 repo（已合併至此，僅供參考） |
+| [openclaw-asr-speaches-skill](https://github.com/Kinolian1107/openclaw-asr-speaches-skill) | speaches 模式獨立 repo（已合併至此，archived） |
+| [openclaw-asr-whisperX-skill](https://github.com/Kinolian1107/openclaw-asr-whisperX-skill) | whisperX 模式獨立 repo（已合併至此，archived） |
+| [googlefile-asr-faster-whisper-skill](https://github.com/Kinolian1107/googlefile-asr-faster-whisper-skill) | 最初版本（archived） |
 
 ---
 
@@ -254,8 +268,9 @@ Clone this repo into your project directory. The agent will read the appropriate
 
 | Repo | Purpose |
 |------|---------|
-| [openclaw-asr-speaches-skill](https://github.com/Kinolian1107/openclaw-asr-speaches-skill) | Standalone speaches repo (merged here, reference only) |
-| [openclaw-asr-whisperX-skill](https://github.com/Kinolian1107/openclaw-asr-whisperX-skill) | Standalone whisperX repo (merged here, reference only) |
+| [openclaw-asr-speaches-skill](https://github.com/Kinolian1107/openclaw-asr-speaches-skill) | Standalone speaches repo (merged here, archived) |
+| [openclaw-asr-whisperX-skill](https://github.com/Kinolian1107/openclaw-asr-whisperX-skill) | Standalone whisperX repo (merged here, archived) |
+| [googlefile-asr-faster-whisper-skill](https://github.com/Kinolian1107/googlefile-asr-faster-whisper-skill) | Original version (archived) |
 
 ## License
 
