@@ -1,4 +1,4 @@
-# openclaw-local-asr — Agent Instructions
+# openclaw-local-asr-skill — Agent Instructions
 
 Local ASR toolkit with two modes: **speaches** (Docker-based) and **whisperx** (local Python).
 

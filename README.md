@@ -1,4 +1,4 @@
-# openclaw-local-asr
+# openclaw-local-asr-skill
 
 [中文](#中文) | [English](#english)
 
@@ -8,7 +8,7 @@
 
 ### 簡介
 
-本地 GPU 加速的語音轉逐字稿工具包，支援兩種轉錄引擎，可作為獨立 CLI 工具或 AI Agent Skill 使用。
+本地 GPU 加速的語音轉逐字稿 AI Agent Skill，支援兩種轉錄引擎。可接收 Google Drive 連結、Telegram 音訊/影片檔案、或本地檔案路徑，自動完成轉錄並回傳結果。
 
 ### 兩種 ASR 模式
 
@@ -24,6 +24,32 @@
 | 字詞糾正 | 無 | 有（corrections.json）|
 | 速度 | 較快（Docker API） | 稍慢（首次載入模型）|
 | 需要 Docker | 是 | 否 |
+
+### 架構
+
+```
+輸入來源（GDrive / Telegram / 本地檔案）
+    ↓
+路由器 SKILL.md → 讀取 config/asr_config.json
+    ↓
+mode == "speaches"?
+├─ YES → speaches/SKILL.md → speaches/scripts/transcribe_smart.py
+└─ NO  → whisperx/SKILL.md → whisperx/scripts/transcribe_whisperx.py
+    ↓
+輸出 SRT/TXT → 透過 Telegram 傳送
+```
+
+### 資料夾分工
+
+| 位置 | 用途 |
+|------|------|
+| 本 repo (`config/`) | 設定檔：模式切換、熱詞、字詞糾正 |
+| 本 repo (`speaches/`, `whisperx/`) | 轉錄腳本、子 skill 指引 |
+| `/home/kino/asr/` | **運行時工作目錄**：下載檔案、轉錄中間檔、輸出結果 |
+| `/home/kino/asr/.venv/` | speaches 模式 Python venv |
+| `/home/kino/asr/.venv-whisperx/` | whisperx 模式 Python venv |
+| `/home/kino/asr/speaker_embeddings/` | 已註冊的說話者聲紋 |
+| `/home/kino/asr/speaker_samples/` | 自動擷取的說話者音檔樣本 |
 
 ### 前置需求
 
@@ -45,11 +71,17 @@
 #### 1. Clone
 
 ```bash
-git clone https://github.com/Kinolian1107/openclaw-local-asr.git
-cd openclaw-local-asr
+git clone https://github.com/Kinolian1107/openclaw-local-asr-skill.git
+cd openclaw-local-asr-skill
 ```
 
-#### 2. speaches 模式設定
+#### 2. 建立工作目錄
+
+```bash
+mkdir -p /home/kino/asr/{speaker_embeddings,speaker_samples,output}
+```
+
+#### 3. speaches 模式設定
 
 ```bash
 # 安裝 NVIDIA Container Toolkit（如尚未安裝）
@@ -61,24 +93,28 @@ sudo apt update && sudo apt install -y nvidia-container-toolkit
 sudo nvidia-ctk runtime configure --runtime=docker
 sudo systemctl restart docker
 
-# 啟動 speaches 容器（根據 speaches/docker/docker-compose.yml 調整路徑）
+# 建立 speaches venv
+python3 -m venv /home/kino/asr/.venv
+/home/kino/asr/.venv/bin/pip install torch silero-vad gdown
+
+# 啟動 speaches 容器
 sudo docker compose -f speaches/docker/docker-compose.yml up -d
 ```
 
-#### 3. whisperx 模式設定
+#### 4. whisperx 模式設定
 
 ```bash
 # 建立虛擬環境
-/usr/bin/python3.12 -m venv /path/to/asr-venv
+/usr/bin/python3.12 -m venv /home/kino/asr/.venv-whisperx
 
 # 安裝 WhisperX
-/path/to/asr-venv/bin/pip install whisperx gdown opencc-python-reimplemented
+/home/kino/asr/.venv-whisperx/bin/pip install whisperx gdown opencc-python-reimplemented
 
 # RTX 50 系列（Blackwell/sm_120）必要步驟
-/path/to/asr-venv/bin/pip install --pre torch torchaudio \
+/home/kino/asr/.venv-whisperx/bin/pip install --pre torch torchaudio \
     --index-url https://download.pytorch.org/whl/nightly/cu128 \
     --force-reinstall --no-deps
-/path/to/asr-venv/bin/pip install --pre nvidia-cudnn-cu12 nvidia-nccl-cu12 \
+/home/kino/asr/.venv-whisperx/bin/pip install --pre nvidia-cudnn-cu12 nvidia-nccl-cu12 \
     --index-url https://download.pytorch.org/whl/nightly/cu128 \
     --force-reinstall --no-deps
 
@@ -95,10 +131,11 @@ export HF_TOKEN=hf_your_token_here
 python3 speaches/scripts/transcribe_smart.py /path/to/audio.mp3 --lang zh
 
 # whisperx 模式
-python3 whisperx/scripts/transcribe_whisperx.py /path/to/audio.mp3 --lang zh --format srt
+/home/kino/asr/.venv-whisperx/bin/python3 whisperx/scripts/transcribe_whisperx.py \
+    /path/to/audio.mp3 --lang zh --format srt
 
 # whisperx + 說話者辨識 + 字幕切割
-HF_TOKEN=hf_xxx python3 whisperx/scripts/transcribe_whisperx.py \
+HF_TOKEN=hf_xxx /home/kino/asr/.venv-whisperx/bin/python3 whisperx/scripts/transcribe_whisperx.py \
     /path/to/audio.mp3 --lang zh --format srt --diarize --max-chars 25 \
     --topic "投資分享會"
 ```
@@ -107,13 +144,11 @@ HF_TOKEN=hf_xxx python3 whisperx/scripts/transcribe_whisperx.py \
 
 **OpenClaw：**
 ```bash
-# 建立 3 個 symlink（路由器 + 兩個引擎）
-ln -sf /path/to/openclaw-local-asr ~/.openclaw/skills/gfile-asr
-ln -sf /path/to/openclaw-local-asr/speaches ~/.openclaw/skills/gfile-asr-speaches
-ln -sf /path/to/openclaw-local-asr/whisperx ~/.openclaw/skills/gfile-asr-whisperx
+# 只需 1 個 symlink（路由器會自動呼叫子 skill）
+ln -sf /path/to/openclaw-local-asr-skill ~/.openclaw/skills/gfile-asr
 ```
 
-然後在 Telegram 中傳送 Google Drive 連結並說「轉逐字稿」。
+然後在 Telegram 中傳送 Google Drive 連結或音檔並說「轉逐字稿」。
 
 **Cursor / Claude Code / Codex / Gemini CLI：**
 Clone 此 repo 到專案目錄。Agent 會自動讀取 `SKILL.md` / `CLAUDE.md` / `AGENTS.md` / `GEMINI.md`。
@@ -124,14 +159,14 @@ Clone 此 repo 到專案目錄。Agent 會自動讀取 `SKILL.md` / `CLAUDE.md` 
 
 | 檔案 | 用途 |
 |------|------|
-| `asr_config.json` | ASR 模式選擇、路徑設定 |
+| `asr_config.json` | ASR 模式選擇、引擎設定 |
 | `corrections.json` | 字詞糾正對照表（ASR 常見錯誤修正）|
 | `hotwords.txt` | 熱詞清單（提升 WhisperX 辨識準確度）|
 
 ### 專案結構
 
 ```
-openclaw-local-asr/
+openclaw-local-asr-skill/
 ├── SKILL.md                  # 路由器 skill（判斷模式，導向子 skill）
 ├── README.md
 ├── AGENTS.md                 # AI agent 通用指引
@@ -160,13 +195,20 @@ openclaw-local-asr/
         └── speaker_embed.py
 ```
 
+### 相關 Repo
+
+| Repo | 用途 |
+|------|------|
+| [openclaw-asr-speaches-skill](https://github.com/Kinolian1107/openclaw-asr-speaches-skill) | speaches 模式獨立 repo（已合併至此，僅供參考） |
+| [openclaw-asr-whisperX-skill](https://github.com/Kinolian1107/openclaw-asr-whisperX-skill) | whisperX 模式獨立 repo（已合併至此，僅供參考） |
+
 ---
 
 ## English
 
 ### Overview
 
-Local GPU-accelerated speech-to-text toolkit with two transcription engines. Works as a standalone CLI tool or as an AI Agent Skill.
+Local GPU-accelerated speech-to-text AI Agent Skill with two transcription engines. Accepts Google Drive links, Telegram audio/video files, or local file paths, and automatically transcribes and delivers results.
 
 ### Two ASR Modes
 
@@ -186,27 +228,34 @@ Local GPU-accelerated speech-to-text toolkit with two transcription engines. Wor
 ### Quick Start
 
 ```bash
-git clone https://github.com/Kinolian1107/openclaw-local-asr.git
-cd openclaw-local-asr
+git clone https://github.com/Kinolian1107/openclaw-local-asr-skill.git
+cd openclaw-local-asr-skill
 
 # speaches mode
 python3 speaches/scripts/transcribe_smart.py /path/to/audio.mp3 --lang zh
 
 # whisperx mode
-python3 whisperx/scripts/transcribe_whisperx.py /path/to/audio.mp3 --lang zh --format srt
+/path/to/venv-whisperx/bin/python3 whisperx/scripts/transcribe_whisperx.py \
+    /path/to/audio.mp3 --lang zh --format srt
 ```
 
 ### AI Agent Installation
 
 **OpenClaw:**
 ```bash
-ln -sf /path/to/openclaw-local-asr ~/.openclaw/skills/gfile-asr
-ln -sf /path/to/openclaw-local-asr/speaches ~/.openclaw/skills/gfile-asr-speaches
-ln -sf /path/to/openclaw-local-asr/whisperx ~/.openclaw/skills/gfile-asr-whisperx
+# Only 1 symlink needed (router auto-delegates to sub-skills)
+ln -sf /path/to/openclaw-local-asr-skill ~/.openclaw/skills/gfile-asr
 ```
 
 **Cursor / Claude Code / Codex / Gemini CLI:**
 Clone this repo into your project directory. The agent will read the appropriate instruction file automatically.
+
+### Related Repos
+
+| Repo | Purpose |
+|------|---------|
+| [openclaw-asr-speaches-skill](https://github.com/Kinolian1107/openclaw-asr-speaches-skill) | Standalone speaches repo (merged here, reference only) |
+| [openclaw-asr-whisperX-skill](https://github.com/Kinolian1107/openclaw-asr-whisperX-skill) | Standalone whisperX repo (merged here, reference only) |
 
 ## License
 

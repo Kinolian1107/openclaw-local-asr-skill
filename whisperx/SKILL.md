@@ -1,9 +1,10 @@
 ---
-name: gfile-asr-whisperx
+name: openclaw-asr-whisperx
 description: >
-  Download audio/video files from Google Drive and transcribe using WhisperX
-  (faster-whisper + wav2vec2 alignment + speaker diarization). GPU-accelerated.
+  Transcribe audio/video using WhisperX (faster-whisper + wav2vec2 alignment +
+  speaker diarization). GPU-accelerated. Accepts Google Drive links, Telegram files, or local paths.
   Features: OpenCC 繁體輸出, hotwords, corrections, speaker embedding matching.
+  Sub-skill of openclaw-local-asr-skill.
   Triggers on keywords: 轉逐字稿, 轉文字, transcribe, transcript, 語音轉文字, ASR, 字幕, subtitle,
   辨識成文字, 語音辨識.
 metadata:
@@ -14,9 +15,9 @@ metadata:
     os: ["linux"]
 ---
 
-# Google Drive ASR — WhisperX Mode (v2)
+# ASR — WhisperX Mode (v2)
 
-Transcribe audio/video from Google Drive using **WhisperX** (faster-whisper + wav2vec2 alignment + speaker diarization).
+Transcribe audio/video using **WhisperX** (faster-whisper + wav2vec2 alignment + speaker diarization). Accepts Google Drive links, Telegram files, or local paths.
 
 ## v2 Features
 

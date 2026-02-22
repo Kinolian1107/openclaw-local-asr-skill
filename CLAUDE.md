@@ -1,4 +1,4 @@
-# openclaw-local-asr — Claude Code Instructions
+# openclaw-local-asr-skill — Claude Code Instructions
 
 Local ASR toolkit with two modes: **speaches** (Docker-based) and **whisperx** (local Python).
 

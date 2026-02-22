@@ -1,4 +1,4 @@
-# openclaw-local-asr — Gemini Instructions
+# openclaw-local-asr-skill — Gemini Instructions
 
 Local ASR toolkit with two modes: **speaches** (Docker-based) and **whisperx** (local Python).
 

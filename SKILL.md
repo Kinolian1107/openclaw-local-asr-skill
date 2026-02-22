@@ -4,6 +4,7 @@ description: >
   ASR router skill — reads asr_config.json to determine the active transcription
   mode (speaches or whisperx), then delegates to the corresponding sub-skill.
   Supports Google Drive links, Telegram audio/video files, and local file paths.
+  Part of openclaw-local-asr-skill.
   Triggers on keywords: 轉逐字稿, 轉文字, transcribe, transcript, 語音轉文字, ASR, 字幕, subtitle,
   辨識成文字, 語音辨識.
 metadata:

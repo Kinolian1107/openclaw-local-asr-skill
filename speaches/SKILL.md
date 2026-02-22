@@ -1,9 +1,9 @@
 ---
-name: gfile-asr-speaches
+name: openclaw-asr-speaches
 description: >
-  Download audio/video files from Google Drive and transcribe them locally using
-  ffmpeg silence-detection + speaches Docker (faster-whisper with GPU).
-  Outputs SRT subtitles, plain text, or JSON.
+  Transcribe audio/video files using ffmpeg silence-detection + speaches Docker
+  (faster-whisper with GPU). Accepts Google Drive links, Telegram files, or local paths.
+  Outputs SRT subtitles, plain text, or JSON. Sub-skill of openclaw-local-asr-skill.
   Triggers on keywords: 轉逐字稿, 轉文字, transcribe, transcript, 語音轉文字, ASR, 字幕, subtitle.
 metadata:
   openclaw:
@@ -13,9 +13,9 @@ metadata:
     os: ["linux"]
 ---
 
-# Google Drive ASR — Speaches Mode
+# ASR — Speaches Mode
 
-Transcribe audio/video from Google Drive using **ffmpeg silence-detection + speaches Docker API** (faster-whisper, GPU-accelerated).
+Transcribe audio/video using **ffmpeg silence-detection + speaches Docker API** (faster-whisper, GPU-accelerated). Accepts Google Drive links, Telegram files, or local paths.
 
 ## How It Works
 

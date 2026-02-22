@@ -1,4 +1,4 @@
-# openclaw-local-asr — Copilot Instructions
+# openclaw-local-asr-skill — Copilot Instructions
 
 Local ASR toolkit with two modes: **speaches** (Docker-based) and **whisperx** (local Python).
 
