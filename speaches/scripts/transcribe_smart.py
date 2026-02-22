@@ -292,10 +292,16 @@ def main():
     parser.add_argument("--output-dir", default=ASR_DIR, help="Output directory")
     args = parser.parse_args()
 
+    download_dir = os.path.join(args.output_dir, "downloads")
+    tmp_dir = os.path.join(args.output_dir, "tmp")
+    out_dir = os.path.join(args.output_dir, "output")
+    for d in [download_dir, tmp_dir, out_dir]:
+        os.makedirs(d, exist_ok=True)
+
     input_path = args.input
 
     if "drive.google.com" in input_path:
-        input_path = download_gdrive(input_path, args.output_dir)
+        input_path = download_gdrive(input_path, download_dir)
 
     if not os.path.exists(input_path):
         print(f"ERROR: File not found: {input_path}")
@@ -305,7 +311,7 @@ def main():
     mime, _, _ = run(f'file --brief --mime-type "{input_path}"')
     print(f"File: {input_path} ({mime})")
 
-    wav_path = os.path.join(args.output_dir, f"{basename}.wav")
+    wav_path = os.path.join(tmp_dir, f"{basename}.wav")
     if mime.startswith("video/") or (mime.startswith("audio/") and not input_path.endswith(".wav")):
         extract_audio(input_path, wav_path)
     elif input_path.endswith(".wav"):
@@ -322,7 +328,7 @@ def main():
     boundaries = smart_chunk_boundaries(duration, silences, max_chunk=args.max_chunk)
     print(f"  Splitting into {len(boundaries)} smart chunks")
 
-    chunk_dir = os.path.join(args.output_dir, f"chunks_{basename}")
+    chunk_dir = os.path.join(tmp_dir, f"chunks_{basename}")
     os.makedirs(chunk_dir, exist_ok=True)
 
     all_segments = []
@@ -369,9 +375,9 @@ def main():
     if hallucination_count > 0:
         print(f"  Filtered {hallucination_count} hallucinated segments")
 
-    srt_path = os.path.join(args.output_dir, f"{basename}.srt")
-    txt_path = os.path.join(args.output_dir, f"{basename}.txt")
-    json_path = os.path.join(args.output_dir, f"{basename}.json")
+    srt_path = os.path.join(out_dir, f"{basename}.srt")
+    txt_path = os.path.join(out_dir, f"{basename}.txt")
+    json_path = os.path.join(out_dir, f"{basename}.json")
 
     srt_content = build_srt(all_segments)
     with open(srt_path, "w", encoding="utf-8") as f:
@@ -383,6 +389,10 @@ def main():
 
     with open(json_path, "w", encoding="utf-8") as f:
         json.dump({"text": text_content, "segments": all_segments}, f, ensure_ascii=False, indent=2)
+
+    if wav_path != input_path and os.path.exists(wav_path):
+        os.remove(wav_path)
+        print(f"  Cleaned up intermediate: {wav_path}")
 
     print(f"\n{'='*50}")
     print(f"Transcription complete!")

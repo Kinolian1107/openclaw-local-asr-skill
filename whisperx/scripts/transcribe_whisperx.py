@@ -665,10 +665,16 @@ def main():
                         help="Max characters per subtitle segment (0=disabled, recommended: 20 for Chinese)")
     args = parser.parse_args()
 
+    download_dir = os.path.join(args.output_dir, "downloads")
+    tmp_dir = os.path.join(args.output_dir, "tmp")
+    out_dir = os.path.join(args.output_dir, "output")
+    for d in [download_dir, tmp_dir, out_dir]:
+        os.makedirs(d, exist_ok=True)
+
     input_path = args.input
 
     if "drive.google.com" in input_path:
-        input_path = download_gdrive(input_path, args.output_dir)
+        input_path = download_gdrive(input_path, download_dir)
 
     if not os.path.exists(input_path):
         print(f"ERROR: File not found: {input_path}")
@@ -678,13 +684,13 @@ def main():
     print(f"Input: {input_path} ({mime})")
 
     basename = Path(input_path).stem
-    wav_path = os.path.join(args.output_dir, f"{basename}.wav")
+    wav_path = os.path.join(tmp_dir, f"{basename}.wav")
 
     if mime.startswith("video/") or (mime.startswith("audio/") and not input_path.endswith(".wav")):
         extract_audio(input_path, wav_path, denoise=args.denoise)
     elif input_path.endswith(".wav"):
         if args.denoise:
-            denoised_path = os.path.join(args.output_dir, f"{basename}_denoised.wav")
+            denoised_path = os.path.join(tmp_dir, f"{basename}_denoised.wav")
             extract_audio(input_path, denoised_path, denoise=True)
             wav_path = denoised_path
         else:
@@ -695,7 +701,7 @@ def main():
         language=args.lang,
         output_format=args.format,
         diarize=args.diarize,
-        output_dir=args.output_dir,
+        output_dir=out_dir,
         device=args.device,
         topic=args.topic,
         hotwords_file=args.hotwords_file,
@@ -703,6 +709,10 @@ def main():
         no_opencc=args.no_opencc,
         max_chars=args.max_chars,
     )
+    for tmp_wav in Path(tmp_dir).glob(f"{basename}*.wav"):
+        tmp_wav.unlink()
+        print(f"  Cleaned up intermediate: {tmp_wav}")
+
     print(f"\nDone! {len(segments)} segments transcribed.")
 
 

@@ -41,8 +41,9 @@ Activate when ANY of the following are true:
 ## Input Sources & File Acquisition
 
 ### Source 1: Google Drive Link
+The script handles downloads automatically into `/home/kino/asr/downloads/`:
 ```bash
-gdown "https://drive.google.com/uc?id={FILE_ID}" -O /home/kino/asr/{filename}
+# Just pass the URL as the input argument — gdown is called internally
 ```
 
 ### Source 2: Telegram File (OpenClaw media attachment)
@@ -53,11 +54,28 @@ If OpenClaw cannot download the file (e.g. >20MB without Local Bot API), a `<tel
 
 Extract the `file_id` and download using the tg-dl-localapi skill:
 ```bash
-FILE_PATH=$(bash ~/.openclaw/skills/tg-dl-localapi/scripts/tg-download.sh "{file_id}" -o /home/kino/asr)
+FILE_PATH=$(bash ~/.openclaw/skills/tg-dl-localapi/scripts/tg-download.sh "{file_id}" -o /home/kino/asr/downloads)
 ```
 
 ### Source 4: Local File Path
 Use the path directly — no download needed.
+
+## Directory Structure
+
+The working directory `/home/kino/asr/` is organized as:
+
+```
+/home/kino/asr/
+├── downloads/          ← Downloaded source files (mp3, mp4, etc.)
+├── tmp/                ← Intermediate files (WAV, chunks) — auto-cleaned
+├── output/             ← Final output (SRT, TXT, JSON)
+├── speaker_embeddings/ ← Registered speaker voice prints
+├── speaker_samples/    ← Extracted speaker audio samples
+├── .venv/              ← speaches Python venv
+└── .venv-whisperx/     ← whisperx Python venv
+```
+
+Intermediate WAV files and chunk directories in `tmp/` are automatically cleaned up after transcription completes.
 
 ## Video → Audio Conversion
 

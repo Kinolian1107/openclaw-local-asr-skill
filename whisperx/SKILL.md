@@ -80,7 +80,7 @@ Required packages: `whisperx`, `gdown`, `opencc-python-reimplemented`, `soundfil
 
 For Google Drive links:
 ```bash
-gdown "https://drive.google.com/uc?id={FILE_ID}" -O /home/kino/asr/{filename}
+gdown "https://drive.google.com/uc?id={FILE_ID}" -O /home/kino/asr/downloads/{filename}
 ```
 
 For Telegram files or local paths, use the file path directly.
@@ -93,10 +93,12 @@ Resolve config file paths relative to the **repo root** (parent of this SKILL.md
 REPO_DIR="$(dirname "${SKILL_DIR}")"
 ```
 
+Output goes to `/home/kino/asr/output/`. Intermediate WAV in `/home/kino/asr/tmp/` is auto-cleaned.
+
 Basic (with topic):
 ```bash
 /home/kino/asr/.venv-whisperx/bin/python3 "${SKILL_DIR}/scripts/transcribe_whisperx.py" \
-    /home/kino/asr/{filename} --lang zh --format srt --topic "主題描述" \
+    /home/kino/asr/downloads/{filename} --lang zh --format srt --topic "主題描述" \
     --hotwords-file "${REPO_DIR}/config/hotwords.txt" \
     --corrections-file "${REPO_DIR}/config/corrections.json"
 ```
@@ -104,7 +106,7 @@ Basic (with topic):
 With denoising:
 ```bash
 /home/kino/asr/.venv-whisperx/bin/python3 "${SKILL_DIR}/scripts/transcribe_whisperx.py" \
-    /home/kino/asr/{filename} --lang zh --format srt --topic "主題" --denoise \
+    /home/kino/asr/downloads/{filename} --lang zh --format srt --topic "主題" --denoise \
     --hotwords-file "${REPO_DIR}/config/hotwords.txt" \
     --corrections-file "${REPO_DIR}/config/corrections.json"
 ```
@@ -112,7 +114,7 @@ With denoising:
 With speaker diarization:
 ```bash
 HF_TOKEN=hf_xxx /home/kino/asr/.venv-whisperx/bin/python3 "${SKILL_DIR}/scripts/transcribe_whisperx.py" \
-    /home/kino/asr/{filename} --lang zh --format srt --topic "主題" --diarize \
+    /home/kino/asr/downloads/{filename} --lang zh --format srt --topic "主題" --diarize \
     --hotwords-file "${REPO_DIR}/config/hotwords.txt" \
     --corrections-file "${REPO_DIR}/config/corrections.json"
 ```
@@ -120,7 +122,7 @@ HF_TOKEN=hf_xxx /home/kino/asr/.venv-whisperx/bin/python3 "${SKILL_DIR}/scripts/
 With subtitle splitting:
 ```bash
 /home/kino/asr/.venv-whisperx/bin/python3 "${SKILL_DIR}/scripts/transcribe_whisperx.py" \
-    /home/kino/asr/{filename} --lang zh --format srt --topic "主題" --max-chars 25 \
+    /home/kino/asr/downloads/{filename} --lang zh --format srt --topic "主題" --max-chars 25 \
     --hotwords-file "${REPO_DIR}/config/hotwords.txt" \
     --corrections-file "${REPO_DIR}/config/corrections.json"
 ```
@@ -137,7 +139,7 @@ The script automatically:
    ```
    action: send
    message: "轉寫完成！{basename}.srt（WhisperX，{duration}s）"
-   filePath: /home/kino/asr/{basename}.srt
+   filePath: /home/kino/asr/output/{basename}.srt
    ```
 
 2. If `--diarize` was used and there are unmatched speakers, inform the user:

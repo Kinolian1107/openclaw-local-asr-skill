@@ -50,7 +50,7 @@ sudo docker compose -f /opt/docker/docker-compose.yml up -d speaches
 
 For Google Drive links:
 ```bash
-gdown "https://drive.google.com/uc?id={FILE_ID}" -O /home/kino/asr/{filename}
+gdown "https://drive.google.com/uc?id={FILE_ID}" -O /home/kino/asr/downloads/{filename}
 ```
 
 For Telegram files or local paths, use the file path directly.
@@ -59,8 +59,10 @@ For Telegram files or local paths, use the file path directly.
 
 ```bash
 python3 "${SKILL_DIR}/scripts/transcribe_smart.py" \
-    /home/kino/asr/{filename} --lang zh --format srt
+    /home/kino/asr/downloads/{filename} --lang zh --format srt
 ```
+
+Output goes to `/home/kino/asr/output/`. Intermediate WAV and chunks in `/home/kino/asr/tmp/` are auto-cleaned.
 
 The script handles everything automatically:
 - Detects file type (audio/video), converts to WAV if needed (ffmpeg)
@@ -79,7 +81,7 @@ The script handles everything automatically:
    action: send
    channel: telegram
    message: "轉寫完成！{basename}.srt（{duration}s，{n_segments} 條字幕）"
-   filePath: /home/kino/asr/{basename}.srt
+   filePath: /home/kino/asr/output/{basename}.srt
    ```
 
 2. Display summary in conversation:
