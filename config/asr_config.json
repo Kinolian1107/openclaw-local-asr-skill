@@ -3,13 +3,13 @@
   "available_modes": {
     "speaches": {
       "description": "ffmpeg silence-detection + speaches Docker API (faster-whisper GPU)",
-      "skill": "gfile-asr-speaches",
+      "skill": "asr-local-speaches",
       "venv": "/home/kino/asr/.venv",
       "script": "speaches/scripts/transcribe_smart.py"
     },
     "whisperx": {
       "description": "WhisperX batch inference + wav2vec2 alignment + speaker diarization",
-      "skill": "gfile-asr-whisperx",
+      "skill": "asr-local-whisperx",
       "venv": "/home/kino/asr/.venv-whisperx",
       "script": "whisperx/scripts/transcribe_whisperx.py"
     }

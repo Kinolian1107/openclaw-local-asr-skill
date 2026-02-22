@@ -1,5 +1,5 @@
 ---
-name: gfile-asr
+name: asr-local
 description: >
   ASR router skill — reads asr_config.json to determine the active transcription
   mode (speaches or whisperx), then delegates to the corresponding sub-skill.
@@ -47,7 +47,17 @@ The script handles downloads automatically into `/home/kino/asr/downloads/`:
 ```
 
 ### Source 2: Telegram File (OpenClaw media attachment)
-When a user sends an audio/video file via Telegram, OpenClaw downloads it automatically (via Local Bot API if configured). The file path appears in the conversation as a media attachment — use it directly as a local file path.
+When a user sends an audio/video file via Telegram, OpenClaw downloads it automatically (via Local Bot API if configured). The file path appears in the conversation as a media attachment (e.g. `/home/kino/.openclaw/media/inbound/file_2---xxxx.mp3`).
+
+**IMPORTANT: Do NOT use the OpenClaw media path directly.** Instead:
+1. Extract the **original filename** from the Telegram message metadata (the `file_name` field in the attachment info, or the filename the user uploaded). If no original filename is available, derive a readable name from the user's message context (e.g. topic or description).
+2. Copy the file to `/home/kino/asr/downloads/{original_filename}`:
+   ```bash
+   cp "/home/kino/.openclaw/media/inbound/{openclaw_file}" "/home/kino/asr/downloads/{original_filename}"
+   ```
+3. Use the copied path `/home/kino/asr/downloads/{original_filename}` as the input for transcription.
+
+This ensures all source files are centralized in `downloads/` and output files are named after the original upload, not OpenClaw's internal file IDs.
 
 ### Source 3: Telegram Large File (`<telegram_large_file>` tag)
 If OpenClaw cannot download the file (e.g. >20MB without Local Bot API), a `<telegram_large_file>` tag is injected into the message text containing `file_id`, `file_size`, `file_name`, and `mime_type`.

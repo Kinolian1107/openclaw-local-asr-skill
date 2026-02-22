@@ -46,7 +46,7 @@ sudo docker compose -f /opt/docker/docker-compose.yml up -d speaches
 
 ### Step 1: Acquire File
 
-**If called from the gfile-asr router with a local file path, skip this step.**
+**If called from the asr-local router with a local file path, skip this step.**
 
 For Google Drive links:
 ```bash

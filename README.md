@@ -158,7 +158,7 @@ HF_TOKEN=hf_xxx /home/kino/asr/.venv-whisperx/bin/python3 whisperx/scripts/trans
 **OpenClaw：**
 ```bash
 # 只需 1 個 symlink（路由器會自動呼叫子 skill）
-ln -sf /path/to/openclaw-local-asr-skill ~/.openclaw/skills/gfile-asr
+ln -sf /path/to/openclaw-local-asr-skill ~/.openclaw/skills/asr-local
 ```
 
 然後在 Telegram 中傳送 Google Drive 連結或音檔並說「轉逐字稿」。
@@ -258,7 +258,7 @@ python3 speaches/scripts/transcribe_smart.py /path/to/audio.mp3 --lang zh
 **OpenClaw:**
 ```bash
 # Only 1 symlink needed (router auto-delegates to sub-skills)
-ln -sf /path/to/openclaw-local-asr-skill ~/.openclaw/skills/gfile-asr
+ln -sf /path/to/openclaw-local-asr-skill ~/.openclaw/skills/asr-local
 ```
 
 **Cursor / Claude Code / Codex / Gemini CLI:**
