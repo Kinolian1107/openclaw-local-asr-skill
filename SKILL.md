@@ -3,6 +3,7 @@ name: gfile-asr
 description: >
   ASR router skill — reads asr_config.json to determine the active transcription
   mode (speaches or whisperx), then delegates to the corresponding sub-skill.
+  Supports Google Drive links, Telegram audio/video files, and local file paths.
   Triggers on keywords: 轉逐字稿, 轉文字, transcribe, transcript, 語音轉文字, ASR, 字幕, subtitle,
   辨識成文字, 語音辨識.
 metadata:
@@ -13,37 +14,67 @@ metadata:
     os: ["linux"]
 ---
 
-# Google Drive ASR — Router
+# ASR Router — Speech-to-Text
 
-This is the **entry point** for all ASR (speech-to-text) tasks. It determines which transcription engine to use and delegates to the appropriate sub-skill.
+This is the **entry point** for all ASR (speech-to-text) tasks. It handles file acquisition from multiple sources, then delegates transcription to the configured engine.
 
 ## How It Works
 
-1. Read `config/asr_config.json` (resolve relative to this SKILL.md's directory)
-2. Check the `"mode"` field
-3. Delegate to the corresponding sub-skill:
+1. **Acquire the file** (see Input Sources below)
+2. Read `config/asr_config.json` (resolve relative to this SKILL.md's directory)
+3. Check the `"mode"` field
+4. Delegate to the corresponding sub-skill:
    - `"speaches"` → read and follow `speaches/SKILL.md` (in this same repo)
    - `"whisperx"` → read and follow `whisperx/SKILL.md` (in this same repo)
+5. **Pass the local file path** to the sub-skill (skip the sub-skill's download step)
 
 ## Trigger Conditions
 
 Activate when ANY of the following are true:
 
 1. User sends a **Google Drive link** + mentions: 轉逐字稿, 轉文字, transcribe, transcript, 語音轉文字, ASR, 字幕, subtitle, 摘要, summary, 分析, 辨識成文字, 語音辨識
-2. User provides a **local file path** to audio/video and asks for transcription
-3. User says "transcribe" or "轉逐字稿" referencing a previously downloaded file
+2. User sends an **audio/video file via Telegram** (appears as media attachment or `<telegram_large_file>` tag)
+3. User provides a **local file path** to audio/video and asks for transcription
+4. User says "transcribe" or "轉逐字稿" referencing a previously downloaded file
+
+## Input Sources & File Acquisition
+
+### Source 1: Google Drive Link
+```bash
+gdown "https://drive.google.com/uc?id={FILE_ID}" -O /home/kino/asr/{filename}
+```
+
+### Source 2: Telegram File (OpenClaw media attachment)
+When a user sends an audio/video file via Telegram, OpenClaw downloads it automatically (via Local Bot API if configured). The file path appears in the conversation as a media attachment — use it directly as a local file path.
+
+### Source 3: Telegram Large File (`<telegram_large_file>` tag)
+If OpenClaw cannot download the file (e.g. >20MB without Local Bot API), a `<telegram_large_file>` tag is injected into the message text containing `file_id`, `file_size`, `file_name`, and `mime_type`.
+
+Extract the `file_id` and download using the tg-dl-localapi skill:
+```bash
+FILE_PATH=$(bash ~/.openclaw/skills/tg-dl-localapi/scripts/tg-download.sh "{file_id}" -o /home/kino/asr)
+```
+
+### Source 4: Local File Path
+Use the path directly — no download needed.
+
+## Video → Audio Conversion
+
+Both sub-skills automatically convert video files to WAV (16kHz mono) using ffmpeg before transcription. No manual conversion is needed. Supported video formats: MP4, MKV, AVI, MOV, WebM, FLV.
 
 ## Mode Routing
 
 ```
-User request → Read config/asr_config.json
-                    ↓
+Input (any source) → local file path
+                         ↓
+              Read config/asr_config.json
+                         ↓
               mode == "speaches"?
-              ├─ YES → Read speaches/SKILL.md → Follow it
-              └─ NO  → Read whisperx/SKILL.md → Follow it
+              ├─ YES → Read speaches/SKILL.md → Follow it (skip Step 1 if file is local)
+              └─ NO  → Read whisperx/SKILL.md → Follow it (skip Step 1 if file is local)
 ```
 
-After determining the mode, **read the corresponding sub-skill's SKILL.md and follow its instructions completely**. Do not mix instructions from different modes.
+After determining the mode, **read the corresponding sub-skill's SKILL.md and follow its instructions completely**. Do not mix instructions from different modes. If the file is already downloaded locally, skip the sub-skill's Step 1 (download) and go directly to Step 2 (transcription).
 
 ## /asrmode Command
 

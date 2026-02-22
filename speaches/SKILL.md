@@ -44,11 +44,16 @@ sudo docker compose -f /opt/docker/docker-compose.yml up -d speaches
 
 **CRITICAL: Run ALL steps in sequence without stopping. Do NOT wait for user prompts between steps. The entire pipeline must complete autonomously. Proactively report results via Telegram when done.**
 
-### Step 1: Download from Google Drive
+### Step 1: Acquire File
 
+**If called from the gfile-asr router with a local file path, skip this step.**
+
+For Google Drive links:
 ```bash
 gdown "https://drive.google.com/uc?id={FILE_ID}" -O /home/kino/asr/{filename}
 ```
+
+For Telegram files or local paths, use the file path directly.
 
 ### Step 2: Run Smart Transcription
 
